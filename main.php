@@ -1,108 +1,6 @@
 <?php
 
-class DBConnect
-{
-    // Propriété privée pour stocker l'objet PDO
-    private $pdo = null;
-
-    // Constructeur : connexion
-    public function __construct()
-    {
-        try {
-            $this->pdo = new PDO(
-                'mysql:host=localhost;dbname=projet-2;charset=utf8',
-                'root',
-                '',
-                array(
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false
-                )
-            );
-        } catch (Exception $e) {
-            die('Erreur de connexion : ' . $e->getMessage());
-        }
-    }
-
-    // Récupérer le PDO
-    public function getPDO()
-    {
-        return $this->pdo;
-    }
-}
-
-
-class ContactManager
-{
-    private $pdo;
-
-    public function __construct($pdo)
-    {
-        $this->pdo = $pdo;
-    }
-
-    // Récupérer tous les contacts
-    public function findAll()
-    {
-        $stmt = $this->pdo->query("SELECT * FROM contact");
-        $results = $stmt->fetchAll();
-        $contacts = [];
-            foreach ($results as $row) {
-                $contacts[] = new Contact(
-                    $row['Id'],
-                    $row['Name'],
-                    $row['email'],
-                    $row['phone_number']
-                    );
-            }
-        return $contacts;
-    }
-}
-
-class Contact{
-
-    private int $id;
-    private string $name;
-    private string $email;
-    private string $phone_number;
-
-    // Constructeur pour initialiser un contact
-    public function __construct(int $id, string $name, string $email, string $phone_number)
-    {
-        $this->id = $id;
-        $this->name = $name;
-        $this->email = $email;
-        $this->phone_number = $phone_number;
-    }
-
-
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function getEmail(): string
-    {
-        return $this->email;
-    }
-
-    public function getPhoneNumber(): string
-    {
-        return $this->phone_number;
-    }
-
-    // afficher le contact
-    public function __toString(): string
-    {
-        return "ID: {$this->id}, Name: {$this->name}, Email: {$this->email}, Phone: {$this->phone_number}";
-    }
-
-}
+require_once 'Command.php';
 
 $db = new DBConnect();
 $manager = new ContactManager($db->getPDO());
@@ -113,6 +11,7 @@ $manager = new ContactManager($db->getPDO());
 $contacts = $manager->findAll();
 
 var_dump($contacts);
+var_dump($matches);
 
 if (empty($contacts)) {
     echo "Aucun contact trouvé.\n";
@@ -124,15 +23,48 @@ while (true) {
     echo "---------------------------------------------------------\n\n";
     $line = readline("Entrez votre commande : ");
 
+    if ($line === "list") {
+        $command->list();
+    }
 
-    if ($line == "list") {
-        echo "\naffichage de la liste :\n\n";
-        foreach ($contacts as $contact) {
-        echo $contact . "\n"; // utilise la méthode __toString() de Contact
-}
-    } else {
+    elseif (preg_match('/^detail\s+(\d+)$/', $line, $matches)) {
+        $id = (int)$matches[1]; // récupération de l’ID
+        echo "Commande detail avec ID : $id\n";
+    }
+
+    elseif (preg_match('/^create\s+(.+),(.+),(.+)$/', $line, $matches)) {
+        $name = (string)$matches[1]; // récupération du name
+        $email = (string)$matches[2]; // récupération de l’email
+        $phone_number = (string)$matches[3]; // récupération du phone_number
+        echo "Commande create avec nom : $name\n";
+    } 
+
+    elseif (preg_match('/^delete\s+(\d+)$/', $line, $matches)) {
+        $id = (int)$matches[1];
+        $command->delete($id);
+    }
+
+    elseif (preg_match('/^update\s+(\d+),(.+),(.+),(.+)$/', $line, $matches)) {
+        $id = (int) $matches[1];
+        $name = trim($matches[2]);
+        $email = trim($matches[3]);
+        $phone = trim($matches[4]);
+
+        $command->update($id, $name, $email, $phone);
+    }
+
+    elseif ($line === "help") {
+        $command->help();
+    }
+
+    else {
         echo "Vous avez saisi : $line\n";
     }
+    
+    
+    
 }
+
+
 
 
