@@ -29,6 +29,28 @@ class ContactManager
         return $contacts;
     }
 
+
+// Récupérer un seul contact
+    public function findById(int $id): ?Contact
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM contact WHERE id = ?");
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) return null;
+
+        return new Contact(
+            $row['Id'],
+            $row['name'],
+            $row['email'],
+            $row['phone_number']
+        );
+    }
+
+
+
+
+
+
 // Creer un Id
     public function create(string $name, string $email, string $phone_number): bool
     {

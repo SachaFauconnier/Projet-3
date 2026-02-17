@@ -1,122 +1,80 @@
 <?php
 
-require_once 'DBConnect.php';
 require_once 'ContactManager.php';
 
-class Commande
+class Command
 {
-    public function list(): void {
-        $db = new DBConnect();
-        $manager = new ContactManager($db->getPDO());
+    private ContactManager $manager;
 
-        $contacts = $manager->findAll();
+    public function __construct(ContactManager $manager)
+    {
+        $this->manager = $manager;
+    }
 
+    public function list(): void
+    {
+        $contacts = $this->manager->findAll();
         if (empty($contacts)) {
             echo "Aucun contact trouvé.\n";
             return;
         }
 
-        echo "\naffichage de la liste :\n\n";
+        echo "\nListe des contacts :\n";
         foreach ($contacts as $contact) {
-            echo $contact . "\n"; 
+            echo $contact . "\n";
         }
     }
 
-
-// --------------------------------------DETAIL-------------------------------------------------
-    public function detail(int $id): void {
-
-        $db = new DBConnect();
-        $manager = new ContactManager($db->getPDO());
-
-        $contact = $manager->findbyId($id);
-
-        if ($contact === null) {
-            echo "contact non trouvé.\n";
+    public function detail(int $id): void
+    {
+        $contact = $this->manager->findById($id);
+        if (!$contact) {
+            echo "Contact non trouvé.\n";
             return;
         }
 
-        echo "\naffichage du contact :\n\n";
-        echo $contact . "\n"; 
+        echo "\nDétails du contact :\n";
+        echo "ID: " . $contact->getId() . "\n";
+        echo "Nom: " . $contact->getName() . "\n";
+        echo "Email: " . $contact->getEmail() . "\n";
+        echo "Téléphone: " . $contact->getPhoneNumber() . "\n";
     }
 
-
-// --------------------------------------CREATE-------------------------------------------------
-    public function create(string $name, string $email, string $phone_number): void {
-
-        $db = new DBConnect();
-        $manager = new ContactManager($db->getPDO());
-
-        $success = $manager->create($name, $email, $phone_number);
-
-        if (!$success) {
+    public function create(string $name, string $email, string $phone_number): void
+    {
+        if ($this->manager->create($name, $email, $phone_number)) {
+            echo "Contact créé avec succès !\n";
+        } else {
             echo "Erreur lors de la création du contact.\n";
-            return;
         }
-
-        echo "Contact créé avec succès !\n";
     }
 
-
-// --------------------------------------DELETE-------------------------------------------------
     public function delete(int $id): void
     {
-    $db = new DBConnect();
-    $manager = new ContactManager($db->getPDO());
-
-    $success = $manager->delete($id);
-
-    if (!$success) {
-        echo "Erreur lors de la suppression du contact.\n";
-        return;
+        if ($this->manager->delete($id)) {
+            echo "Contact supprimé avec succès !\n";
+        } else {
+            echo "Erreur lors de la suppression du contact.\n";
+        }
     }
 
-    echo "Contact supprimé avec succès !\n";
-}
-
-
-// --------------------------------------UPDATE-------------------------------------------------
-public function update(int $id, string $name, string $email, string $phone): void
-{
-    $db = new DBConnect();
-    $manager = new ContactManager($db->getPDO());
-
-    $success = $manager->update($id, $name, $email, $phone);
-
-    if (!$success) {
-        echo "Erreur lors de la modification du contact.\n";
-        return;
+    public function update(int $id, string $name, string $email, string $phone): void
+    {
+        if ($this->manager->update($id, $name, $email, $phone)) {
+            echo "Contact modifié avec succès !\n";
+        } else {
+            echo "Erreur lors de la modification du contact.\n";
+        }
     }
 
-    echo "Contact modifié avec succès !\n";
+    public function help(): void
+    {
+        echo "\nCommandes disponibles :\n";
+        echo "  list\n";
+        echo "  detail <id>\n";
+        echo "  create <nom>,<email>,<telephone>\n";
+        echo "  delete <id>\n";
+        echo "  update <id>,<nom>,<email>,<telephone>\n";
+        echo "  help\n\n";
+    }
 }
-
-
-// --------------------------------------HELP-------------------------------------------------
-public function help(): void
-{
-    echo "\nCommandes disponibles :\n";
-    echo "  list\n";
-    echo "  detail <id>\n";
-    echo "  create <nom>,<email>,<telephone>\n";
-    echo "  delete <id>\n";
-    echo "  update <id>,<nom>,<email>,<telephone>\n";
-    echo "  help\n\n";
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}
-
-
