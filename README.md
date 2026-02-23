@@ -26,8 +26,8 @@ L’application ne possède pas d’interface graphique afin de se concentrer ex
 - ✅ Créer un contact  
 - ✅ Supprimer un contact  
 - ✅ Quitter le programme  
-- 🔄 (Optionnel) Modifier un contact  
-- ℹ️ (Optionnel) Afficher l’aide  
+- ✅ (Optionnel) Modifier un contact  
+- ✅ (Optionnel) Afficher l’aide  
 
 ---
 
